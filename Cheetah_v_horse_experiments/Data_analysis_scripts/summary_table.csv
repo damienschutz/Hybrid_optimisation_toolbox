@@ -1,0 +1,17 @@
+species,gait_type,target_speed_ms,min_cost_of_transport,stiffness_norm_at_min,cost_at_lowest_stiffness,cost_at_highest_stiffness,pct_change_low_to_min,pct_change_min_to_high,n_successful_runs
+cheetah,rotary,8,26.7073,15.9986,36.465,27.4188,-26.76,2.66,50
+cheetah,rotary,10,29.7487,21.2095,38.5992,30.6473,-22.93,3.02,50
+cheetah,rotary,12,34.4914,21.2095,43.7266,35.807,-21.12,3.81,50
+cheetah,rotary,15,40.951,18.4207,48.8335,42.0766,-16.14,2.75,50
+cheetah,transverse,8,31.6367,100,38.4396,31.6367,-17.70,0.00,50
+cheetah,transverse,10,41.7442,100,48.9161,41.7442,-14.66,0.00,50
+cheetah,transverse,12,44.6426,100,50.5163,44.6426,-11.63,0.00,50
+cheetah,transverse,15,54.9787,37.2759,57.2627,55.8071,-3.99,1.51,50
+horse,rotary,8,109.925,6.86649,125.419,113.935,-12.35,3.65,50
+horse,rotary,10,136.857,9.10298,148.261,139.32,-7.69,1.80,50
+horse,rotary,12,165.049,28.1177,177.67,166.679,-7.10,0.99,50
+horse,rotary,15,210.586,56.8987,236.424,211.145,-10.93,0.27,50
+horse,transverse,8,119.774,100,137.587,119.774,-12.95,0.00,50
+horse,transverse,10,147.127,100,164.121,147.127,-10.35,0.00,50
+horse,transverse,12,178.241,100,191.346,178.241,-6.85,0.00,50
+horse,transverse,15,226.715,100,251.441,226.715,-9.83,0.00,50
