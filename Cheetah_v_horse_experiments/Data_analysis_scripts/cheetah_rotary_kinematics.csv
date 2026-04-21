@@ -1,0 +1,21 @@
+species,gait,target_speed_ms,stiffness_Nm_rad,stiffness_normalised,stiffness_norm_requested,stride_period_s,stride_frequency_Hz,stride_length_m,stance_time_FR_s,swing_time_FR_s,duty_factor_FR,lit_stride_length_m,lit_swing_time_s,lit_stance_time_s,lit_duty_factor,lit_stride_frequency_Hz,lit_source,notes
+cheetah,rotary,8,4.55,0.1,0.1,0.348087,2.87285,2.78469,0.0506027,0.297484,0.145374,3.75,0.31,0.09,0.24,2.4,"P. E. Hudson, High speed galloping in the cheetah",
+cheetah,rotary,8,43.4113,0.954095,1,0.348288,2.87119,2.7863,0.0494695,0.298818,0.142036,3.75,0.31,0.09,0.24,2.4,"P. E. Hudson, High speed galloping in the cheetah",
+cheetah,rotary,8,476.892,10.4811,10,0.322157,3.10408,2.57725,0.0439201,0.278237,0.136332,3.75,0.31,0.09,0.24,2.4,"P. E. Hudson, High speed galloping in the cheetah",
+cheetah,rotary,8,2248.48,49.4171,50,0.303468,3.29525,2.42774,0.0425184,0.260949,0.140108,3.75,0.31,0.09,0.24,2.4,"P. E. Hudson, High speed galloping in the cheetah",closest=49.4171 dist=0.5829 from target=50.0000
+cheetah,rotary,8,4550,100,100,0.303035,3.29995,2.42428,0.0428998,0.260135,0.141567,3.75,0.31,0.09,0.24,2.4,"P. E. Hudson, High speed galloping in the cheetah",
+cheetah,rotary,10,4.55,0.1,0.1,0.347706,2.87599,3.47706,0.04,0.307706,0.11504,4,0.3,0.08,0.2,2.6,"P. E. Hudson, High speed galloping in the cheetah",
+cheetah,rotary,10,43.4113,0.954095,1,0.342842,2.91679,3.42842,0.0400398,0.302802,0.116788,4,0.3,0.08,0.2,2.6,"P. E. Hudson, High speed galloping in the cheetah",
+cheetah,rotary,10,476.892,10.4811,10,0.314033,3.18438,3.14033,0.04,0.274033,0.127375,4,0.3,0.08,0.2,2.6,"P. E. Hudson, High speed galloping in the cheetah",
+cheetah,rotary,10,2248.48,49.4171,50,0.290836,3.43836,2.90836,0.04,0.250836,0.137535,4,0.3,0.08,0.2,2.6,"P. E. Hudson, High speed galloping in the cheetah",closest=49.4171 dist=0.5829 from target=50.0000
+cheetah,rotary,10,4550,100,100,0.293048,3.4124,2.93048,0.04,0.253048,0.136496,4,0.3,0.08,0.2,2.6,"P. E. Hudson, High speed galloping in the cheetah",
+cheetah,rotary,12,4.55,0.1,0.1,0.349488,2.86133,4.19385,0.0400001,0.309488,0.114454,4.5,0.3,0.065,0.18,2.75,"P. E. Hudson, High speed galloping in the cheetah",
+cheetah,rotary,12,43.4113,0.954095,1,0.346344,2.8873,4.15613,0.0401372,0.306207,0.115888,4.5,0.3,0.065,0.18,2.75,"P. E. Hudson, High speed galloping in the cheetah",
+cheetah,rotary,12,476.892,10.4811,10,0.3176,3.14862,3.81119,0.04,0.2776,0.125945,4.5,0.3,0.065,0.18,2.75,"P. E. Hudson, High speed galloping in the cheetah",
+cheetah,rotary,12,2248.48,49.4171,50,0.291069,3.43561,3.49283,0.0400001,0.251069,0.137425,4.5,0.3,0.065,0.18,2.75,"P. E. Hudson, High speed galloping in the cheetah",closest=49.4171 dist=0.5829 from target=50.0000
+cheetah,rotary,12,4550,100,100,0.293075,3.41209,3.5169,0.04,0.253075,0.136484,4.5,0.3,0.065,0.18,2.75,"P. E. Hudson, High speed galloping in the cheetah",
+cheetah,rotary,15,4.55,0.1,0.1,0.334835,2.98655,5.02252,0.0300101,0.304825,0.0896266,5,0.29,0.055,0.16,3,"P. E. Hudson, High speed galloping in the cheetah",
+cheetah,rotary,15,43.4113,0.954095,1,0.330268,3.02784,4.95402,0.0300005,0.300268,0.0908367,5,0.29,0.055,0.16,3,"P. E. Hudson, High speed galloping in the cheetah",
+cheetah,rotary,15,476.892,10.4811,10,0.313492,3.18987,4.70238,0.0300001,0.283492,0.0956965,5,0.29,0.055,0.16,3,"P. E. Hudson, High speed galloping in the cheetah",
+cheetah,rotary,15,2248.48,49.4171,50,0.269682,3.70808,4.04522,0.0300002,0.239681,0.111243,5,0.29,0.055,0.16,3,"P. E. Hudson, High speed galloping in the cheetah",closest=49.4171 dist=0.5829 from target=50.0000
+cheetah,rotary,15,4550,100,100,0.274259,3.64619,4.11388,0.0300003,0.244258,0.109387,5,0.29,0.055,0.16,3,"P. E. Hudson, High speed galloping in the cheetah",

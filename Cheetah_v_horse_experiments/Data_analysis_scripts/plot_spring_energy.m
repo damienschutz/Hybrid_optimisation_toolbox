@@ -6,15 +6,16 @@
 % user-defined cases (species x gait x speed x stiffness).
 %
 % Each case produces one panel in a tiled layout.
+% Raw energy + time data is also exported to a CSV file.
 %
+% Energy formula (from data_analysis_v2.m):
 %   E_spine = (1/2) * k_spine * theta_spine^2
 %   E_leg   = (1/2) * k_leg   * (theta_leg - theta_rest)^2
 %
-% The spring stiffness k here is the ABSOLUTE value (Nm/rad),
-% NOT the normalised value. It is read directly from the
-% .mat file via the filename (stiffness_abs = norm * mass).
+% The spine stiffness k here is the ABSOLUTE value (Nm/rad),
+% read directly from the .mat filename.
 %
-% DOF indices (from existing extraction scripts):
+% DOF indices:
 %   DOF 7  = spine/lumbar angle   -> spine spring
 %   DOF 10 = front-right leg DOF  -> FR leg spring
 %   DOF 19 = hind-left  leg DOF   -> HL leg spring
@@ -29,30 +30,21 @@ clear; clc;
 BASE_DIR = '..';
 
 % ---- Species-specific parameters ------------------------
-% Leg rest angles (rad) and leg spring stiffness (Nm/rad).
-% Spine rest angle is always 0 (no offset needed).
-% Values taken directly from data_analysis_v2.m.
-PARAMS.cheetah.spine_k        = 4550;    % Nm/rad
-PARAMS.cheetah.leg_k          = 5000;    % Nm/rad
-PARAMS.cheetah.leg_rest_front = 0.25;    % rad
-PARAMS.cheetah.leg_rest_hind  = 0.25;    % rad
-PARAMS.cheetah.mass           = 45.5;    % kg
+PARAMS.cheetah.spine_k        = 4550;
+PARAMS.cheetah.leg_k          = 5000;
+PARAMS.cheetah.leg_rest_front = 0.25;
+PARAMS.cheetah.leg_rest_hind  = 0.25;
+PARAMS.cheetah.mass           = 45.5;
 
-PARAMS.horse.spine_k          = 54518;   % Nm/rad
-PARAMS.horse.leg_k            = 55000;   % Nm/rad
-PARAMS.horse.leg_rest_front   = 1.02;    % rad
-PARAMS.horse.leg_rest_hind    = 0.71;    % rad
-PARAMS.horse.mass             = 545.18;   % kg
+PARAMS.horse.spine_k          = 54518;
+PARAMS.horse.leg_k            = 55000;
+PARAMS.horse.leg_rest_front   = 1.02;
+PARAMS.horse.leg_rest_hind    = 0.71;
+PARAMS.horse.mass             = 545.18;
 
 % ---- Cases to plot --------------------------------------
 % Each row: { folder_name, species, gait, speed_ms,
 %             target_norm_stiffness, panel_title }
-%
-% target_norm_stiffness: the script finds the .mat file
-% whose normalised stiffness (abs/mass) is closest to this.
-%
-% To add more panels, just add more rows here.
-
 CASES = {
     'Cheetah_Rotary',   'cheetah', 'rotary',    12,  0.1,  'Rotary Cheetah (0.1\timesBW) at 12 m/s';
     'Cheetah_Rotary',   'cheetah', 'rotary',    12,  100,  'Rotary Cheetah (100\timesBW) at 12 m/s';
@@ -61,13 +53,12 @@ CASES = {
 };
 
 % ---- Layout ---------------------------------------------
-% Number of columns in the tiled layout.
-% Rows are computed automatically from number of cases.
 N_COLS = 2;
 
 % ---- Output files ---------------------------------------
 OUT_FIG = 'spring_energy.fig';
 OUT_PDF = 'spring_energy.pdf';
+OUT_CSV = 'spring_energy_data.csv';
 
 % ---- DOF indices ----------------------------------------
 DOF_SPINE      = 7;
@@ -75,7 +66,7 @@ DOF_LEG_FRONT  = 10;
 DOF_LEG_HIND   = 19;
 
 % ---- Stiffness match tolerance (normalised units) -------
-STIFFNESS_TOL = 0.5;   % generous — norm stiffness spans 0.1 to 100
+STIFFNESS_TOL = 0.5;
 
 % =========================================================
 % ---- FIGURE SETUP ---------------------------------------
@@ -87,12 +78,22 @@ n_rows  = ceil(n_cases / N_COLS);
 fh = figure('Units', 'centimeters', 'Position', [2 2 18 12]);
 set(fh, 'Color', 'w');
 tl = tiledlayout(n_rows, N_COLS, ...
-    'TileSpacing', 'compact', 'Padding', 'compact');
+    'TileSpacing', 'compact', 'Padding', 'compact'); 
 
-% Colours consistent with COT plot
-CLR_SPINE = [0.00, 0.45, 0.70];   % blue
-CLR_FRONT = [0.85, 0.33, 0.10];   % vermillion
-CLR_HIND  = [0.00, 0.62, 0.45];   % green
+CLR_SPINE = [0.00, 0.45, 0.70];
+CLR_FRONT = [0.85, 0.33, 0.10];
+CLR_HIND  = [0.00, 0.62, 0.45];
+
+% =========================================================
+% ---- CSV SETUP ------------------------------------------
+% =========================================================
+
+fid = fopen(OUT_CSV, 'w');
+fprintf(fid, '%s\n', strjoin({ ...
+    'species', 'gait', 'speed_ms', ...
+    'stiffness_Nm_rad', 'stiffness_normalised', 'stiffness_norm_requested', ...
+    'time_s', ...
+    'E_spine_J', 'E_front_leg_J', 'E_hind_leg_J'}, ','));
 
 % =========================================================
 % ---- MAIN LOOP ------------------------------------------
@@ -151,8 +152,6 @@ for ci = 1:n_cases
     end
 
     % ---- Reconstruct time axis and position traces ------
-    % Each phase has 9 collocation points.
-    % PhaseData(i).time(1,1) is the duration of phase i.
     n_phases = numel(D.PhaseData);
     n_pts    = 9;
 
@@ -161,8 +160,8 @@ for ci = 1:n_cases
     hind_pos  = zeros(1, n_pts * n_phases);
     time_vec  = [];
 
-    count     = 1;
-    t_offset  = 0;
+    count    = 1;
+    t_offset = 0;
 
     for ph = 1:n_phases
         idx = count : count + n_pts - 1;
@@ -172,30 +171,25 @@ for ci = 1:n_cases
         hind_pos(idx)  = D.PhaseData(ph).position(:, DOF_LEG_HIND)';
 
         phase_dur = D.PhaseData(ph).time(1, 1);
-        time_vec  = [time_vec, linspace(t_offset, t_offset + phase_dur, n_pts)]; %#ok<AGROW>
+        time_vec  = [time_vec, linspace(t_offset, t_offset + phase_dur, n_pts)]; 
 
         count    = count    + n_pts;
         t_offset = t_offset + phase_dur;
     end
 
     % ---- Compute spring potential energies --------------
-    % Spine: E = (1/2) * k_spine * theta^2
-    %        (absolute stiffness from filename, not species param)
-    %        The spine stiffness k IS the optimisation variable —
-    %        use the actual value from the filename for accuracy.
     tok = regexp(mat_files(best_idx).name, '^(-?[\d.]+)_k_', 'tokens', 'once');
     if ~isempty(tok)
         k_spine_abs = str2double(tok{1});
     else
-        k_spine_abs = p.spine_k;   % fallback to species default
+        k_spine_abs = p.spine_k;
         warning('Panel %d: could not parse stiffness from filename, using default.', ci);
     end
+    k_norm_actual = avail_norm(best_idx);
 
     E_spine = (0.5 * k_spine_abs) .* spine_pos.^2;
-
-    % Leg springs: E = (1/2) * k_leg * (theta - theta_rest)^2
-    E_front = (0.5 * p.leg_k) .* (front_pos - p.leg_rest_front).^2;
-    E_hind  = (0.5 * p.leg_k) .* (hind_pos  - p.leg_rest_hind ).^2;
+    E_front = (0.5 * p.leg_k)     .* (front_pos - p.leg_rest_front).^2;
+    E_hind  = (0.5 * p.leg_k)     .* (hind_pos  - p.leg_rest_hind ).^2;
 
     % ---- Plot panel -------------------------------------
     ax = nexttile;
@@ -205,9 +199,9 @@ for ci = 1:n_cases
     plot(ax, time_vec, E_front, '--', 'Color', CLR_FRONT, 'LineWidth', 1.4);
     plot(ax, time_vec, E_hind,  ':',  'Color', CLR_HIND,  'LineWidth', 1.8);
 
-    xlabel(ax, 'Time (s)',            'FontSize', 8, 'FontName', 'Times New Roman');
-    ylabel(ax, 'Potential energy (J)','FontSize', 8, 'FontName', 'Times New Roman');
-    title(ax,  panel_title,           'FontSize', 8, 'FontName', 'Times New Roman', ...
+    xlabel(ax, 'Time (s)',             'FontSize', 8, 'FontName', 'Times New Roman');
+    ylabel(ax, 'Potential energy (J)', 'FontSize', 8, 'FontName', 'Times New Roman');
+    title(ax,   panel_title,           'FontSize', 8, 'FontName', 'Times New Roman', ...
         'FontWeight', 'bold');
 
     set(ax, 'FontSize', 8, 'FontName', 'Times New Roman', ...
@@ -216,27 +210,33 @@ for ci = 1:n_cases
 
     hold(ax, 'off');
 
-    fprintf('Panel %d done: %s  |  k_norm=%.4f (target %.4f)  |  k_abs=%.1f Nm/rad\n', ...
-        ci, panel_title, avail_norm(best_idx), target_norm, k_spine_abs);
+    % ---- Write this case to CSV -------------------------
+    % One row per time point
+    for ri = 1:numel(time_vec)
+        fprintf(fid, '%s,%s,%g,%g,%g,%g,%g,%g,%g,%g\n', ...
+            species, gait, speed_ms, ...
+            k_spine_abs, k_norm_actual, target_norm, ...
+            time_vec(ri), ...
+            E_spine(ri), E_front(ri), E_hind(ri));
+    end
+
+    fprintf('Panel %d done: %s  |  k_norm=%.4f (target %.4f)  |  k_abs=%.1f Nm/rad  |  %d rows written\n', ...
+        ci, panel_title, k_norm_actual, target_norm, k_spine_abs, numel(time_vec));
 end
 
-% ---- Shared legend at figure level ----------------------
-lg = legend(findobj(fh, 'Type', 'Line', '-and', 'LineStyle', '-', ...
-    '-and', 'Color', CLR_SPINE), ...   % dummy — replaced below
-    'FontSize', 7);
-delete(lg);
+% ---- Close CSV ------------------------------------------
+fclose(fid);
+fprintf('\nCSV written: %s\n', OUT_CSV);
 
-% Add a proper figure-level legend using the last valid axes
+% ---- Shared legend (last panel) -------------------------
 all_axes = findobj(fh, 'Type', 'Axes');
-last_ax  = all_axes(1);
-lh = get(last_ax, 'Children');
-if ~isempty(lh)
-    legend(last_ax, {'Hind leg spring', 'Front leg spring', 'Spinal spring'}, ...
+if ~isempty(all_axes)
+    legend(all_axes(1), {'Hind leg spring', 'Front leg spring', 'Spinal spring'}, ...
         'FontSize', 7, 'FontName', 'Times New Roman', 'Box', 'off', ...
         'Location', 'best');
 end
 
-% ---- Save -----------------------------------------------
+% ---- Save figure ----------------------------------------
 savefig(fh, OUT_FIG);
 try
     exportgraphics(fh, OUT_PDF, 'ContentType', 'vector');
@@ -244,5 +244,5 @@ catch
     print(fh, OUT_PDF, '-dpdf', '-vector');
 end
 
-fprintf('\nSaved: %s\n', OUT_FIG);
+fprintf('Saved: %s\n', OUT_FIG);
 fprintf('Saved: %s\n', OUT_PDF);
