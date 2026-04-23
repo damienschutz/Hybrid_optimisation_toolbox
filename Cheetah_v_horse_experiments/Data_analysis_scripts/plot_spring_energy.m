@@ -44,6 +44,7 @@ PARAMS.horse.mass             = 545.18;
 
 % ---- Cases to plot --------------------------------------
 % Each row: { folder_name, species, gait, speed_ms,
+
 %             target_norm_stiffness, panel_title }
 CASES = {
     'Cheetah_Rotary',   'cheetah', 'rotary',    12,  0.1,  'Rotary Cheetah (0.1\timesBW) at 12 m/s';
