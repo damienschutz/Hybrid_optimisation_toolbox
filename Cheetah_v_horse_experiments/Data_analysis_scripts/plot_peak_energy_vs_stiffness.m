@@ -57,8 +57,31 @@ OUT_PDF = 'peak_energy_vs_stiffness.pdf';
 
 % ---- Colours --------------------------------------------
 CLR_SPINE = [0.00, 0.45, 0.70];   % blue
-CLR_FRONT = [0.85, 0.33, 0.10];   % vermillion
+CLR_FRONT = [0.85, 0.33, 0.10];   % vermilian
 CLR_HIND  = [0.00, 0.62, 0.45];   % green
+CLR_OPT  =  [0.80, 0.47, 0.65];   % purple  — optimal stiffness line
+
+% =========================================================
+% ---- READ OPTIMAL STIFFNESS FROM summary_table.csv ------
+% =========================================================
+% Looks up the normalised stiffness at minimum COT for each
+% case (species x gait x speed) from the summary table.
+% If the file is missing, optimal lines are simply omitted.
+
+SUMMARY_CSV = 'summary_table.csv';
+opt_stiffness = containers.Map('KeyType','char','ValueType','double');
+
+if isfile(SUMMARY_CSV)
+    SUM = readtable(SUMMARY_CSV, 'TextType', 'string');
+    for ri = 1:height(SUM)
+        if SUM.target_speed_ms(ri) ~= SPEED_MS; continue; end
+        key = sprintf('%s_%s', SUM.species(ri), SUM.gait_type(ri));
+        opt_stiffness(char(key)) = SUM.stiffness_norm_at_min(ri);
+    end
+    fprintf('Loaded optimal stiffnesses from %s\n', SUMMARY_CSV);
+else
+    warning('summary_table.csv not found — optimal stiffness lines will be omitted.');
+end
 
 % =========================================================
 % ---- FIGURE SETUP ---------------------------------------
@@ -197,7 +220,7 @@ for ci = 1:size(CASES, 1)
         'XTickLabel', {'10^{-1}','10^{0}','10^{1}','10^{2}'}, ...
         'FontSize', 10, 'FontName', 'Times New Roman', ...
         'Box', 'on', 'TickDir', 'out');
-    
+
     xlabel(ax_top, 'Normalized spinal stiffness', ...
         'FontSize', 10, 'FontName', 'Times New Roman');
     ylabel(ax_top, 'Peak elastic energy (J)', ...
@@ -211,6 +234,15 @@ for ci = 1:size(CASES, 1)
             'Box', 'off', 'Location', 'northwest');
     end
 
+    % Vertical line at optimal stiffness (min COT)
+    opt_key = sprintf('%s_%s', species, CASES{ci,3});
+    if isKey(opt_stiffness, opt_key)
+        xline(ax_top, opt_stiffness(opt_key), '--', ...
+            'Color', CLR_OPT, 'LineWidth', 1.2, ...
+            'Label', 'min cost', 'LabelHorizontalAlignment', 'left', ...
+            'FontSize', 8, 'FontName', 'Times New Roman');
+    end
+
     hold(ax_top, 'off');
 
     % ==================================================
@@ -222,7 +254,7 @@ for ci = 1:size(CASES, 1)
     plot(ax_bot, k_plot, f_spine, '-', 'Color', CLR_SPINE, 'LineWidth', 1.4);
 
     % Reference line at f = 1/3 (equal sharing between three springs)
-    yline(ax_bot, 1/3, '--', 'Color', [0.5 0.5 0.5], 'LineWidth', 0.8);
+    yline(ax_bot, 1/3, '--', 'Color', [0.5 0.5 0.5], 'LineWidth', 1.2);
 
     set(ax_bot, 'XScale', 'log', ...
         'XTick', [0.1, 1, 10, 100], ...
@@ -231,17 +263,25 @@ for ci = 1:size(CASES, 1)
         'FontSize', 10, 'FontName', 'Times New Roman', ...
         'Box', 'on', 'TickDir', 'out');
 
-    xlabel(ax_bot, 'Normalized spinal stiffness', ...
+    xlabel(ax_bot, 'Normalized spinal stiffness)', ...
         'FontSize', 10, 'FontName', 'Times New Roman');
-    ylabel(ax_bot, 'Spinal energy fraction', ...
+    ylabel(ax_bot, 'Spinal fraction of summed peak spring energies', ...
         'FontSize', 10, 'FontName', 'Times New Roman');
-    title(ax_bot, [panel_title ' — spinal fraction'], ...
+    title(ax_bot, [panel_title ' — spinal fraction of summed peak spring energies'], ...
         'FontSize', 10, 'FontName', 'Times New Roman', 'FontWeight', 'bold');
 
     if ci == 1
         legend(ax_bot, {'f_{spine}', 'Equal sharing (1/3)'}, ...
             'FontSize', 9, 'FontName', 'Times New Roman', ...
             'Box', 'off', 'Location', 'best');
+    end
+
+    % Vertical line at optimal stiffness (min COT)
+    if isKey(opt_stiffness, opt_key)
+        xline(ax_bot, opt_stiffness(opt_key), '--', ...
+            'Color', CLR_OPT, 'LineWidth', 1.2, ...
+            'Label', 'min cost', 'LabelHorizontalAlignment', 'left', ...
+            'FontSize', 8, 'FontName', 'Times New Roman');
     end
 
     hold(ax_bot, 'off');
