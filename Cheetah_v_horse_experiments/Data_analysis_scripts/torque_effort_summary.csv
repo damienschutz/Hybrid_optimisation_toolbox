@@ -1,0 +1,17 @@
+species,gait,target_speed_ms,k_star_at_min,J_at_min,pct_reduction_from_lowest_k,pct_increase_at_highest_k,n_runs
+cheetah,rotary,8,0.1,19.9347,0.00,77.28,50
+cheetah,rotary,10,9.10298,25.3832,-19.21,25.05,50
+cheetah,rotary,12,7.90604,22.4373,-20.82,31.78,50
+cheetah,rotary,15,12.0679,24.3722,-26.68,39.22,50
+cheetah,transverse,8,7.90604,39.8308,-3.77,12.37,50
+cheetah,transverse,10,5.17947,39.7278,-3.81,11.97,50
+cheetah,transverse,12,49.4171,33.8498,-15.27,11.06,50
+cheetah,transverse,15,5.96362,30.7995,-18.64,14.52,50
+horse,rotary,8,6.86649,6.28503,-27.85,3.80,50
+horse,rotary,10,9.10298,6.84787,-27.93,11.19,50
+horse,rotary,12,12.0679,7.60128,-37.52,11.05,50
+horse,rotary,15,21.2095,10.1434,-20.58,5.72,50
+horse,transverse,8,100,8.7748,-21.19,0.00,50
+horse,transverse,10,10.4811,10.2279,-18.39,0.30,50
+horse,transverse,12,0.232995,11.7812,-20.76,0.03,50
+horse,transverse,15,10.4811,14.1865,-21.43,8.25,50
