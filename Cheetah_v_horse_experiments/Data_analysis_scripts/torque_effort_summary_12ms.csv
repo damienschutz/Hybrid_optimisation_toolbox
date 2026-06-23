@@ -1,0 +1,5 @@
+condition,k* at min original cost,k* at min normalized effort,k* at min saturation,% reduction in saturation from low k
+cheetah_rotary,21.2095,7.90604,13.895,-26.11
+horse_rotary,28.1177,12.0679,12.0679,-22.55
+cheetah_transverse,100,49.4171,5.17947,-2.55
+horse_transverse,100,0.232995,0.232995,-16.46

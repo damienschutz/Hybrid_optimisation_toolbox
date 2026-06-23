@@ -4,12 +4,12 @@
 % Reads torque_effort_metrics.csv (and the four master results
 % CSVs, for stride_length_m) and produces:
 %
-%   1. MAIN PLOT  — 4-panel J_tau_norm vs normalised stiffness
+%   1. MAIN PLOT  — 4-panel J_tau_norm vs normalized stiffness
 %                   (log x-axis), one curve per speed, minima
 %                   marked. Same layout/colours as the COT plot.
 %
 %   2. SUPPORTING PLOT — torque saturation (95th percentile
-%                   |tau|/tau_max) vs normalised stiffness for
+%                   |tau|/tau_max) vs normalized stiffness for
 %                   cheetah rotary, horse rotary, horse
 %                   transverse, all at 12 m/s, on one panel.
 %
@@ -182,7 +182,7 @@ for pi = 1:4
         'FontSize', 8, 'FontName', 'Times New Roman', ...
         'TickDir', 'out');
 
-    xlabel(ax, 'Normalised spring stiffness', ...
+    xlabel(ax, 'Normalized spring stiffness', ...
         'FontSize', 8, 'FontName', 'Times New Roman');
     ylabel(ax, 'J_{\tau,norm}  (\Sigma(\tau/\tau_{max})^2 / stride length)', ...
         'FontSize', 8, 'FontName', 'Times New Roman');
@@ -206,73 +206,75 @@ end
 fprintf('Saved: %s and %s\n', OUT_MAIN_FIG, OUT_MAIN_PDF);
 
 % =========================================================
-% ---- PLOT 2: TORQUE SATURATION AT 12 m/s -------------------
+% ---- PLOT 2: TORQUE SATURATION AT 12 m/s — 4-PANEL ---------
+% Same species x gait layout as Plot 1, but restricted to
+% 12 m/s only (one line per panel). Shared y-axis limits,
+% dashed line at the torque limit, A-D panel labels, no
+% legend (every panel is the same speed).
+%
+% y-axis metric: 95th-percentile torque-capacity use,
+%   P95( |tau_i| / tau_i,max )  taken over all joints i and
+%   all time points in the stride.
 % =========================================================
 
-SAT_CASES = {
-    'cheetah', 'rotary',     'Cheetah Rotary @ 12 m/s';
-    'cheetah', 'transverse', 'Cheetah Transverse @ 12 m/s';
-    'horse',   'rotary',     'Horse Rotary @ 12 m/s';
-    'horse',   'transverse', 'Horse Transverse @ 12 m/s';
-};
-SAT_CLRS = [ ...
-    0.00, 0.45, 0.70;
-    0.80, 0.47, 0.65;
-    0.85, 0.33, 0.10;
-    0.00, 0.62, 0.45];
+SAT_SPEED   = 12;
+SAT_YLIM    = [0.5, 1.2];
+PANEL_LABELS = {'A', 'B', 'C', 'D'};
 
-    
-fh2 = figure('Units', 'centimeters', 'Position', [2 2 12 9]);
+fh2 = figure('Units', 'centimeters', 'Position', [2 2 18 14]);
 set(fh2, 'Color', 'w');
-ax2 = axes('Position', [0.14, 0.14, 0.80, 0.75]);
-hold(ax2, 'on'); box(ax2, 'on');
 
-leg_h = gobjects(size(SAT_CASES,1), 1);
-leg_l = cell(size(SAT_CASES,1), 1);
+for pi = 1:4
+    sp = PANELS{pi,1}; gt = PANELS{pi,2}; ttl = PANELS{pi,3};
 
-for ci = 1:size(SAT_CASES, 1)
-    sp = SAT_CASES{ci,1}; gt = SAT_CASES{ci,2}; lbl = SAT_CASES{ci,3};
-    clr = SAT_CLRS(ci,:);
+    ax = axes('Position', [panel_left(pi), panel_bot(pi), panel_w, panel_h]);
+    hold(ax, 'on'); box(ax, 'on');
 
-    mask = TQ.species == sp & TQ.gait == gt & TQ.target_speed_ms == 12;
+    mask = TQ.species == sp & TQ.gait == gt & TQ.target_speed_ms == SAT_SPEED;
     sub  = TQ(mask, :);
-    if isempty(sub)
-        warning('No data for %s', lbl);
-        continue
+
+    if ~isempty(sub)
+        [~, ord] = sort(sub.stiffness_normalised);
+        sub = sub(ord, :);
+
+        k = sub.stiffness_normalised;
+        s = sub.p95_tau_norm;
+        valid = ~isnan(k) & ~isnan(s);
+        k = k(valid); s = s(valid);
+
+        if ~isempty(k)
+            % Plain line — single colour, no per-speed distinction needed
+            plot(ax, k, s, '-', 'Color', [0.00, 0.45, 0.70], 'LineWidth', 1.6);
+
+            % Mark only the minimum value
+            [~, min_idx] = min(s);
+            plot(ax, k(min_idx), s(min_idx), 'o', ...
+                'MarkerFaceColor', [0.00, 0.45, 0.70], 'MarkerEdgeColor', 'w', ...
+                'MarkerSize', 6, 'LineWidth', 0.8);
+        end
+    else
+        warning('No 12 m/s data for %s %s', sp, gt);
     end
 
-    [~, ord] = sort(sub.stiffness_normalised);
-    sub = sub(ord, :);
+    % Dashed horizontal line at the torque limit
+    yline(ax, 1.0, '--', 'Color', [0.4 0.4 0.4], 'LineWidth', 0.9, ...
+        'Label', 'torque limit', 'FontSize', 6, 'FontName', 'Times New Roman');
 
-    lh = plot(ax2, sub.stiffness_normalised, sub.p95_tau_norm, '-o', ...
-        'Color', clr, 'MarkerFaceColor', clr, 'MarkerEdgeColor', 'w', ...
-        'LineWidth', 1.4, 'MarkerSize', 5);
+    set(ax, 'XScale', 'log', 'XLim', [0.08, 150], 'YLim', SAT_YLIM, ...
+        'XTick', [0.1, 1, 10, 100], ...
+        'XTickLabel', {'10^{-1}','10^{0}','10^{1}','10^{2}'}, ...
+        'FontSize', 8, 'FontName', 'Times New Roman', ...
+        'TickDir', 'out');
 
-    leg_h(ci) = lh;
-    leg_l{ci} = lbl;
+    xlabel(ax, 'Normalized spring stiffness', ...
+        'FontSize', 8, 'FontName', 'Times New Roman');
+    ylabel(ax, '95th-percentile torque-capacity use', ...
+        'FontSize', 8, 'FontName', 'Times New Roman');
+    title(ax, sprintf('%s)  %s', PANEL_LABELS{pi}, ttl), ...
+        'FontSize', 9, 'FontWeight', 'bold', 'FontName', 'Times New Roman');
+
+    hold(ax, 'off');
 end
-
-% Reference line at full capacity
-yline(ax2, 1.0, '--', 'Color', [0.4 0.4 0.4], 'LineWidth', 0.8, ...
-    'Label', '100% capacity', 'FontSize', 7, 'FontName', 'Times New Roman');
-
-set(ax2, 'XScale', 'log', 'XLim', [0.08, 150], ...
-    'XTick', [0.1, 1, 10, 100], ...
-    'XTickLabel', {'10^{-1}','10^{0}','10^{1}','10^{2}'}, ...
-    'FontSize', 9, 'FontName', 'Times New Roman', 'TickDir', 'out');
-
-xlabel(ax2, 'Normalised spring stiffness', ...
-    'FontSize', 9, 'FontName', 'Times New Roman');
-ylabel(ax2, '95th percentile |\tau| / \tau_{max}', ...
-    'FontSize', 9, 'FontName', 'Times New Roman');
-title(ax2, 'Torque saturation at 12 m/s', ...
-    'FontSize', 10, 'FontWeight', 'bold', 'FontName', 'Times New Roman');
-
-valid_entries = arrayfun(@(h) isgraphics(h) && h ~= 0, leg_h);
-legend(ax2, leg_h(valid_entries), leg_l(valid_entries), ...
-    'FontSize', 8, 'FontName', 'Times New Roman', 'Box', 'off', 'Location', 'best');
-
-hold(ax2, 'off');
 
 savefig(fh2, OUT_SAT_FIG);
 try
@@ -281,6 +283,10 @@ catch
     print(fh2, OUT_SAT_PDF, '-dpdf', '-vector');
 end
 fprintf('Saved: %s and %s\n', OUT_SAT_FIG, OUT_SAT_PDF);
+fprintf(['NOTE: y-axis metric is P95(|tau_i|/tau_i,max) taken over all ' ...
+         'joints i and all time points in the stride (95th-percentile ' ...
+         'torque-capacity use). All panels are at %d m/s, y-axis fixed ' ...
+         'to [%.1f, %.1f].\n'], SAT_SPEED, SAT_YLIM(1), SAT_YLIM(2));
 
 % =========================================================
 % ---- SUMMARY TABLE ------------------------------------------
@@ -331,3 +337,93 @@ end
 
 fclose(sfid);
 fprintf('Saved: %s\n', OUT_SUMMARY);
+
+% =========================================================
+% ---- SMALL 12 m/s SUMMARY TABLE ------------------------------
+% One row per condition (species x gait), comparing the
+% stiffness at minimum original cost (COT+accel), minimum
+% normalized torque effort, and minimum saturation — all at
+% 12 m/s — plus the percent reduction in saturation relative
+% to the lowest stiffness tested.
+% =========================================================
+
+OUT_SUMMARY_12MS = 'torque_effort_summary_12ms.csv';
+COST_SUMMARY_CSV = 'summary_table.csv';   % from build_summary_table.m
+
+% Load COT summary table for "stiffness at minimum original cost"
+cost_map = containers.Map('KeyType','char','ValueType','double');
+if isfile(COST_SUMMARY_CSV)
+    CS = readtable(COST_SUMMARY_CSV, 'TextType', 'string');
+    for ri = 1:height(CS)
+        if CS.target_speed_ms(ri) ~= 12; continue; end
+        key = sprintf('%s_%s', CS.species(ri), CS.gait_type(ri));
+        cost_map(char(key)) = CS.stiffness_norm_at_min(ri);
+    end
+else
+    warning('%s not found — "stiffness at minimum original cost" column will be NaN.', ...
+        COST_SUMMARY_CSV);
+end
+
+t2_header = {'condition', ...
+    'k* at min original cost', 'k* at min normalized effort', ...
+    'k* at min saturation', '% reduction in saturation from low k'};
+
+t2fid = fopen(OUT_SUMMARY_12MS, 'w');
+fprintf(t2fid, '%s\n', strjoin(t2_header, ','));
+
+for pi = 1:4
+    sp = PANELS{pi,1};
+    gt = PANELS{pi,2};
+    condition = sprintf('%s_%s', sp, gt);
+
+    mask = TQ.species == sp & TQ.gait == gt & TQ.target_speed_ms == 12;
+    sub  = TQ(mask, :);
+
+    if isempty(sub)
+        fprintf(t2fid, '%s,%g,%g,%g,%g\n', condition, NaN, NaN, NaN, NaN);
+        continue
+    end
+
+    [~, ord] = sort(sub.stiffness_normalised);
+    sub = sub(ord, :);
+    k   = sub.stiffness_normalised;
+
+    % k at minimum original cost (from summary_table.csv, if available)
+    if isKey(cost_map, condition)
+        k_min_cost = cost_map(condition);
+    else
+        k_min_cost = NaN;
+    end
+
+    % k at minimum normalized torque effort
+    J = sub.J_tau_norm;
+    valid_J = ~isnan(J);
+    if any(valid_J)
+        [~, idxJ] = min(J(valid_J));
+        k_sub = k(valid_J);
+        k_min_effort = k_sub(idxJ);
+    else
+        k_min_effort = NaN;
+    end
+
+    % k at minimum saturation, plus % reduction from lowest stiffness
+    s = sub.p95_tau_norm;
+    valid_s = ~isnan(s);
+    if any(valid_s)
+        s_sub = s(valid_s);
+        k_sub2 = k(valid_s);
+        [s_min, idxS] = min(s_sub);
+        k_min_sat = k_sub2(idxS);
+        s_low = s_sub(1);   % lowest stiffness tested (already sorted ascending)
+        pct_reduction_sat = 100 * (s_min - s_low) / s_low;
+    else
+        k_min_sat         = NaN;
+        pct_reduction_sat = NaN;
+    end
+
+    fprintf(t2fid, '%s,%g,%g,%g,%.2f\n', ...
+        condition, k_min_cost, k_min_effort, k_min_sat, pct_reduction_sat);
+end
+
+fclose(t2fid);
+fprintf('Saved: %s\n', OUT_SUMMARY_12MS);
