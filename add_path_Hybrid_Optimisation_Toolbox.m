@@ -8,8 +8,19 @@ function add_path_Hybrid_Optimisation_Toolbox()
 cur = fullfile(pwd);
 addpath(fullfile(cur));
 
-% Code to run on Windows platform
-addpath(genpath('Casadi'));
+if isunix
+    % Code to run on Linux platform
+    addpath(genpath('Casadi_linux'));
+    
+elseif ispc
+    % Code to run on Windows platform
+    addpath(genpath('Casadi_windows'));
+    
+else
+    error('Platform not supported');
+    
+end
+
 addpath(genpath('HSL_Solvers'));
 
 % Required functions
