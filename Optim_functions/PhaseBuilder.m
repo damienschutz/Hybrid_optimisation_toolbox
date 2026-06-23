@@ -272,12 +272,20 @@ function obj = PhaseBuilder(obj)
                    % Cost
                    % J = J + dt/6* (slack{idx1}+ 4*slack{idx2}+slack{idx3});
                    % P_1 = Cost(obj.Cost.Type,tau{idx1},x1);  P_2 = Cost(obj.Cost.Type,tau{idx2},x2);  P_3 = Cost(obj.Cost.Type,tau{idx3},x3); 
-                    J = J + dt/6* (Cost(obj.Cost.Type,tau{idx1},x1) + 4*Cost(obj.Cost.Type,tau{idx2},x2) + Cost(obj.Cost.Type,tau{idx3},x3));
+                    
+                   % J = J + dt/6* (Cost(obj.Cost.Type,tau{idx1},x1) + 4*Cost(obj.Cost.Type,tau{idx2},x2) + Cost(obj.Cost.Type,tau{idx3},x3));
 
-                   % J = J + (t{idx1}/(N-1))/6* (Cost(obj.Cost.Type,tau{idx1},x1) + 4*Cost(obj.Cost.Type,tau{idx2},x2) + Cost(obj.Cost.Type,tau{idx3},x3));
+                   J = J + (t{idx1}/(N-1))/6* (Cost(obj.Cost.Type,tau{idx1},x1) ...
+                       + 4*Cost(obj.Cost.Type,tau{idx2},x2) ...
+                       + Cost(obj.Cost.Type,tau{idx3},x3));
                     
                    % SlackVariables = [slack{idx1} - P_1; slack{idx2} - P_2; slack{idx3} - P_3 ];
                    % obj.ConstraintList = obj.ConstraintList.AddConstraint("Slack Variables",SlackVariables ,[0;0;0], [inf;inf;inf]);
+
+                   % Torque normalised objective
+                   % J = J + dt/6* (Cost(obj.Cost.Type,tau{idx1}./TAU.UpperBound,x1) ...
+                   %     + 4*Cost(obj.Cost.Type,tau{idx2}./TAU.UpperBound,x2) ...
+                   %     + Cost(obj.Cost.Type,tau{idx3}./TAU.UpperBound,x3));
             
                 end
             
@@ -365,12 +373,20 @@ function obj = PhaseBuilder(obj)
                    % Cost
                    % J = J + dt/6* (slack{idx1}+ 4*slack{idx2}+slack{idx3});
                    % P_1 = Cost(obj.Cost.Type,tau{idx1},x1);  P_2 = Cost(obj.Cost.Type,tau{idx2},x2);  P_3 = Cost(obj.Cost.Type,tau{idx3},x3); 
-                   J = J + dt/6* (Cost(obj.Cost.Type,tau{idx1},x1) + 4*Cost(obj.Cost.Type,tau{idx2},x2) + Cost(obj.Cost.Type,tau{idx3},x3));
+                   
+                   % J = J + dt/6* (Cost(obj.Cost.Type,tau{idx1},x1) + 4*Cost(obj.Cost.Type,tau{idx2},x2) + Cost(obj.Cost.Type,tau{idx3},x3));
                     
-                   % J = J + (t{idx1}/(N-1))/6* (Cost(obj.Cost.Type,tau{idx1},x1) + 4*Cost(obj.Cost.Type,tau{idx2},x2) + Cost(obj.Cost.Type,tau{idx3},x3));
+                   J = J + (t{idx1}/(N-1))/6* (Cost(obj.Cost.Type,tau{idx1},x1) ...
+                       + 4*Cost(obj.Cost.Type,tau{idx2},x2) ...
+                       + Cost(obj.Cost.Type,tau{idx3},x3));
                 
                    % SlackVariables = [slack{idx1} - P_1; slack{idx2} - P_2; slack{idx3} - P_3 ];
                    % obj.ConstraintList = obj.ConstraintList.AddConstraint("Slack Variables",SlackVariables ,[0;0;0], [inf;inf;inf]);
+
+                   % Torque normalised cost
+                   % J = J + dt/6* (Cost(obj.Cost.Type,tau{idx1}./TAU.UpperBound,x1) ...
+                   %     + 4*Cost(obj.Cost.Type,tau{idx2}./TAU.UpperBound,x2) ...
+                   %     + Cost(obj.Cost.Type,tau{idx3}./TAU.UpperBound,x3));
             
                 end
                 obj.Cost.Symbolic = t{1} * J;
