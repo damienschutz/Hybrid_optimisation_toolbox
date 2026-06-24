@@ -149,10 +149,11 @@ classdef OptimalControlProblem
         function obj = SolveNLP(obj, X_init)
             if nargin > 1
                 obj.Problem.Values.X0 = X_init;
+        
             else
             end
 
-            X0 = obj.Problem.Values.X0; 
+            X0 = obj.Problem.Values.X0;
             LBX = obj.Problem.Values.LBX;
             UBX = obj.Problem.Values.UBX;
 
@@ -170,8 +171,7 @@ classdef OptimalControlProblem
                 obj.Solution = sol; 
                  
             else
-                p = obj.Parameter.Value; 
-                % tic;
+                p = obj.Parameter.Value;
                 sol = solver('x0', X0, 'lbx', LBX, 'ubx', UBX, ...
                 'lbg', LBG, 'ubg', UBG, 'p',p);
                 % toc;
