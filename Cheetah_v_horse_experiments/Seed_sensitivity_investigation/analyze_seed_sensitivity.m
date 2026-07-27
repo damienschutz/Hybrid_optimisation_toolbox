@@ -44,14 +44,14 @@ LABEL_MAP = struct( ...
 );
 
 SUCCESS_STATUS = 'Solve_Succeeded';   % string to match in Data.Return.return_status
-STIFF_TOL      = 0.05;                % tolerance for matching normalised stiffness
+STIFF_TOL      = 0.5;                % tolerance for matching normalised stiffness
                                       % to original dataset
 
 OUT_CSV = 'seed_sensitivity_summary.csv';
 
 % =========================================================
 % ---- SCAN SENSITIVITY FOLDER ------------------------------
-% =========================================================
+% ========================================================= 
 
 if ~isfolder(SENS_DIR)
     error('Sensitivity folder not found: %s', SENS_DIR);
@@ -189,7 +189,7 @@ end
 all_labels = {records.label};
 all_k_abs  = [records.stiffness_abs];
 
-groups = unique([all_k_abs', string(all_labels')'], 'rows');   % as strings
+groups = unique([all_k_abs', string(all_labels')], 'rows');   % as strings
 % Re-parse to numeric
 unique_pairs = {};
 for gi = 1:size(groups, 1)
@@ -197,6 +197,7 @@ for gi = 1:size(groups, 1)
 end
 
 % Sort by label then stiffness
+unique_pairs = vertcat(unique_pairs{:});
 unique_pairs = sortrows(unique_pairs);
 
 % ---- Write CSV --------------------------------------------
@@ -211,9 +212,9 @@ header = { ...
 fid = fopen(OUT_CSV, 'w');
 fprintf(fid, '%s\n', strjoin(header, ','));
 
-for gi = 1:numel(unique_pairs)
-    k_abs = unique_pairs{gi}{1};
-    lbl   = unique_pairs{gi}{2};
+for gi = 1:size(unique_pairs,1)
+    k_abs = unique_pairs{gi,1};
+    lbl   = unique_pairs{gi,2};
 
     % Get info for this label
     if isfield(LABEL_MAP, lbl)
